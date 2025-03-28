@@ -16,7 +16,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 
 @Composable
-fun WelcomeScreen(onShowListClick: () -> Unit) {
+fun WelcomeScreen(onShowListClick: () -> Unit, onRandomDrinkClick: () -> Unit) {
     Column(
         modifier = Modifier.fillMaxSize(),
         horizontalAlignment = Alignment.CenterHorizontally,
@@ -36,7 +36,17 @@ fun WelcomeScreen(onShowListClick: () -> Unit) {
                 containerColor = Color(0xFF9C27B0)
             )
         ) {
-            Text("Pokaż listę")
+            Text("Show list")
+        }
+
+        Button(
+            onClick = onRandomDrinkClick,
+            colors = ButtonDefaults.buttonColors(
+                containerColor = Color(0xFF9C27B0)
+            ),
+            modifier = Modifier.padding(top = 16.dp)
+        ) {
+            Text("Random drink")
         }
     }
 }

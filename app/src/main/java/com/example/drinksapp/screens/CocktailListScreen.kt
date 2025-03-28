@@ -14,11 +14,16 @@ import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -26,8 +31,14 @@ import com.example.drinksapp.Cocktail
 import com.example.drinksapp.DatabaseHelper
 
 @Composable
-fun CocktailListScreen(dbHelper: DatabaseHelper, onCocktailClick: (Cocktail) -> Unit, onBackClick: () -> Unit) {
+fun CocktailListScreen(
+    dbHelper: DatabaseHelper,
+    onCocktailClick: (Cocktail) -> Unit,
+    onBackClick: () -> Unit
+) {
+    var searchQuery by remember { mutableStateOf("") }
     val cocktails = remember { dbHelper.getCocktails() }
+    val filteredCocktails = cocktails.filter { it.name.contains(searchQuery, ignoreCase = true) }
 
     Column(modifier = Modifier.fillMaxSize()) {
         Row(
@@ -53,11 +64,21 @@ fun CocktailListScreen(dbHelper: DatabaseHelper, onCocktailClick: (Cocktail) -> 
             }
         }
 
+        OutlinedTextField(
+            value = searchQuery,
+            onValueChange = { searchQuery = it },
+            label = { Text("Search") },
+            textStyle = TextStyle(color = Color.LightGray),
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(16.dp)
+        )
+
         LazyColumn(
             modifier = Modifier.fillMaxSize(),
             contentPadding = PaddingValues(16.dp)
         ) {
-            items(cocktails) { cocktail ->
+            items(filteredCocktails) { cocktail ->
                 Card(
                     modifier = Modifier
                         .fillMaxWidth()

@@ -53,7 +53,13 @@ fun DrinksApp(dbHelper: DatabaseHelper) {
     ) {
         when (currentScreen) {
             is Screen.Welcome -> WelcomeScreen(
-                onShowListClick = { currentScreen = Screen.CocktailList })
+                onShowListClick = { currentScreen = Screen.CocktailList },
+                onRandomDrinkClick = {
+                    val cocktails = dbHelper.getCocktails()
+                    selectedCocktail = cocktails.random()
+                    currentScreen = Screen.CocktailDetails
+                }
+            )
 
             is Screen.CocktailList -> CocktailListScreen(
                 dbHelper = dbHelper,
