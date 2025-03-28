@@ -1,7 +1,10 @@
-package com.example.drinksapp
+package com.example.drinksapp.screens
 
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
@@ -12,6 +15,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.example.drinksapp.Cocktail
 
 @Composable
 fun CocktailDetailsScreen(cocktail: Cocktail, onBackClick: () -> Unit) {
@@ -20,23 +24,28 @@ fun CocktailDetailsScreen(cocktail: Cocktail, onBackClick: () -> Unit) {
             .fillMaxSize()
             .padding(16.dp)
     ) {
-        Button(
-            onClick = onBackClick,
-            colors = ButtonDefaults.buttonColors(
-                containerColor = Color(0xFF9C27B0)
-            ),
-            modifier = Modifier.padding(bottom = 16.dp)
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(bottom = 16.dp),
+            horizontalArrangement = Arrangement.SpaceBetween
         ) {
-            Text("Back")
-        }
+            Text(
+                text = cocktail.name,
+                color = Color.White,
+                fontSize = 24.sp,
+                fontWeight = FontWeight.Bold
+            )
 
-        Text(
-            text = cocktail.name,
-            color = Color.White,
-            fontSize = 24.sp,
-            fontWeight = FontWeight.Bold,
-            modifier = Modifier.padding(bottom = 16.dp)
-        )
+            Button(
+                onClick = onBackClick,
+                colors = ButtonDefaults.buttonColors(
+                    containerColor = Color(0xFF9C27B0)
+                )
+            ) {
+                Text("Back")
+            }
+        }
 
         Text(
             text = "Ingredients:",

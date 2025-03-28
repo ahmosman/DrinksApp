@@ -1,4 +1,4 @@
-package com.example.drinksapp
+package com.example.drinksapp.screens
 
 sealed class Screen {
     object Welcome : Screen()

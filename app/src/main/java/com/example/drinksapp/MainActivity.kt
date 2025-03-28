@@ -15,6 +15,10 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import com.example.drinksapp.screens.CocktailDetailsScreen
+import com.example.drinksapp.screens.CocktailListScreen
+import com.example.drinksapp.screens.Screen
+import com.example.drinksapp.screens.WelcomeScreen
 
 class MainActivity : ComponentActivity() {
     private lateinit var dbHelper: DatabaseHelper
@@ -52,9 +56,12 @@ fun DrinksApp(dbHelper: DatabaseHelper) {
                 onShowListClick = { currentScreen = Screen.CocktailList })
 
             is Screen.CocktailList -> CocktailListScreen(
-                dbHelper = dbHelper, onCocktailClick = { cocktail ->
+                dbHelper = dbHelper,
+                onCocktailClick = { cocktail ->
                     selectedCocktail = dbHelper.getCocktailDetails(cocktail.id)
                     currentScreen = Screen.CocktailDetails
+                }, onBackClick = {
+                    currentScreen = Screen.Welcome
                 })
 
             is Screen.CocktailDetails -> CocktailDetailsScreen(

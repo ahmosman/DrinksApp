@@ -1,4 +1,4 @@
-package com.example.drinksapp
+package com.example.drinksapp.screens
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column

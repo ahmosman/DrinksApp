@@ -4,42 +4,26 @@ import android.content.Context
 import android.database.sqlite.SQLiteDatabase
 import android.database.sqlite.SQLiteOpenHelper
 import java.io.FileOutputStream
-import java.io.InputStream
 
 class DatabaseHelper(context: Context) : SQLiteOpenHelper(context, DATABASE_NAME, null, DATABASE_VERSION) {
 
     init {
-        val dbFile = context.getDatabasePath(DATABASE_NAME)
-        if (!dbFile.exists()) {
+        if (!context.getDatabasePath(DATABASE_NAME).exists()) {
             copyDatabase(context)
         }
     }
 
     private fun copyDatabase(context: Context) {
-        val dbPath = context.getDatabasePath(DATABASE_NAME)
-        dbPath.parentFile?.mkdirs()
-
-        val inputStream: InputStream = context.assets.open(DATABASE_NAME)
-        val outputStream = FileOutputStream(dbPath)
-
-        val buffer = ByteArray(1024)
-        var length: Int
-        while (inputStream.read(buffer).also { length = it } > 0) {
-            outputStream.write(buffer, 0, length)
+        context.assets.open(DATABASE_NAME).use { inputStream ->
+            FileOutputStream(context.getDatabasePath(DATABASE_NAME)).use { outputStream ->
+                inputStream.copyTo(outputStream)
+            }
         }
-
-        outputStream.flush()
-        outputStream.close()
-        inputStream.close()
     }
 
-    override fun onCreate(db: SQLiteDatabase) {
-        // Baza danych jest kopiowana z assets
-    }
+    override fun onCreate(db: SQLiteDatabase) {}
 
-    override fun onUpgrade(db: SQLiteDatabase, oldVersion: Int, newVersion: Int) {
-        // Aktualizacja bazy danych
-    }
+    override fun onUpgrade(db: SQLiteDatabase, oldVersion: Int, newVersion: Int) {}
 
     companion object {
         private const val DATABASE_NAME = "drinks.db"
@@ -47,48 +31,25 @@ class DatabaseHelper(context: Context) : SQLiteOpenHelper(context, DATABASE_NAME
     }
 
     fun getCocktails(): List<Cocktail> {
-        val cocktails = mutableListOf<Cocktail>()
         val db = readableDatabase
         val cursor = db.rawQuery("SELECT cocktail_id, name FROM cocktails", null)
-
-        cursor.use {
-            while (it.moveToNext()) {
-                val id = it.getInt(it.getColumnIndexOrThrow("cocktail_id"))
-                val name = it.getString(it.getColumnIndexOrThrow("name"))
-                cocktails.add(Cocktail(id, name, "", emptyList()))
-            }
+        return cursor.use {
+            generateSequence { if (it.moveToNext()) it else null }
+                .map { Cocktail(it.getInt(0), it.getString(1), "", emptyList()) }
+                .toList()
         }
-
-        return cocktails
     }
 
     fun getCocktailDetails(id: Int): Cocktail {
         val db = readableDatabase
-        val cursor = db.rawQuery(
-            "SELECT c.name, c.recipe FROM cocktails c WHERE c.cocktail_id = ?",
-            arrayOf(id.toString())
-        )
+        val cursor = db.rawQuery("SELECT name, recipe FROM cocktails WHERE cocktail_id = ?", arrayOf(id.toString()))
+        val (name, recipe) = cursor.use { if (it.moveToFirst()) it.getString(0) to it.getString(1) else "" to "" }
 
-        var name = ""
-        var recipe = ""
-
-        cursor.use {
-            if (it.moveToFirst()) {
-                name = it.getString(it.getColumnIndexOrThrow("name"))
-                recipe = it.getString(it.getColumnIndexOrThrow("recipe"))
-            }
-        }
-
-        val ingredients = mutableListOf<String>()
-        val ingredientsCursor = db.rawQuery(
-            "SELECT ingredient_name FROM ingredients WHERE cocktail_id = ?",
-            arrayOf(id.toString())
-        )
-
-        ingredientsCursor.use {
-            while (it.moveToNext()) {
-                ingredients.add(it.getString(it.getColumnIndexOrThrow("ingredient_name")))
-            }
+        val ingredientsCursor = db.rawQuery("SELECT ingredient_name FROM ingredients WHERE cocktail_id = ?", arrayOf(id.toString()))
+        val ingredients = ingredientsCursor.use {
+            generateSequence { if (it.moveToNext()) it else null }
+                .map { it.getString(0) }
+                .toList()
         }
 
         return Cocktail(id, name, recipe, ingredients)
