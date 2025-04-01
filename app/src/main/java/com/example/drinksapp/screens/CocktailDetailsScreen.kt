@@ -6,8 +6,11 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.Divider
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
@@ -16,13 +19,17 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.drinksapp.Cocktail
+import com.example.drinksapp.components.TimerComponent
 
 @Composable
 fun CocktailDetailsScreen(cocktail: Cocktail, onBackClick: () -> Unit) {
+    val scrollState = rememberScrollState()
+
     Column(
         modifier = Modifier
             .fillMaxSize()
             .padding(16.dp)
+            .verticalScroll(scrollState)
     ) {
         Row(
             modifier = Modifier
@@ -43,12 +50,12 @@ fun CocktailDetailsScreen(cocktail: Cocktail, onBackClick: () -> Unit) {
                     containerColor = Color(0xFF9C27B0)
                 )
             ) {
-                Text("Back")
+                Text("Powrót")
             }
         }
 
         Text(
-            text = "Ingredients:",
+            text = "Składniki:",
             color = Color.White,
             fontSize = 18.sp,
             fontWeight = FontWeight.Bold,
@@ -65,7 +72,7 @@ fun CocktailDetailsScreen(cocktail: Cocktail, onBackClick: () -> Unit) {
         }
 
         Text(
-            text = "Recipe:",
+            text = "Przepis:",
             color = Color.White,
             fontSize = 18.sp,
             fontWeight = FontWeight.Bold,
@@ -75,7 +82,21 @@ fun CocktailDetailsScreen(cocktail: Cocktail, onBackClick: () -> Unit) {
         Text(
             text = cocktail.recipe,
             color = Color.White,
-            fontSize = 16.sp
+            fontSize = 16.sp,
+            modifier = Modifier.padding(bottom = 16.dp)
+        )
+
+        Divider(
+            color = Color.White.copy(alpha = 0.3f),
+            thickness = 1.dp,
+            modifier = Modifier.padding(vertical = 16.dp)
+        )
+
+        // Wykorzystanie komponentu minutnika
+        TimerComponent(
+            initialTime = 60,
+            showTitle = true,
+            title = "Minutnik przygotowania"
         )
     }
 }
