@@ -93,8 +93,7 @@ fun CocktailDetailsScreen(cocktail: Cocktail, onBackClick: () -> Unit) {
         )
 
         TimerComponent(
-            initialTime = 60,
-            showTitle = true,
+            showTitle = false,
         )
     }
 }
