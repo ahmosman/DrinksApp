@@ -10,7 +10,7 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
-import androidx.compose.material3.Divider
+import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
@@ -50,12 +50,12 @@ fun CocktailDetailsScreen(cocktail: Cocktail, onBackClick: () -> Unit) {
                     containerColor = Color(0xFF9C27B0)
                 )
             ) {
-                Text("Powrót")
+                Text("Back")
             }
         }
 
         Text(
-            text = "Składniki:",
+            text = "Ingredients:",
             color = Color.White,
             fontSize = 18.sp,
             fontWeight = FontWeight.Bold,
@@ -72,7 +72,7 @@ fun CocktailDetailsScreen(cocktail: Cocktail, onBackClick: () -> Unit) {
         }
 
         Text(
-            text = "Przepis:",
+            text = "Recipe:",
             color = Color.White,
             fontSize = 18.sp,
             fontWeight = FontWeight.Bold,
@@ -86,17 +86,15 @@ fun CocktailDetailsScreen(cocktail: Cocktail, onBackClick: () -> Unit) {
             modifier = Modifier.padding(bottom = 16.dp)
         )
 
-        Divider(
-            color = Color.White.copy(alpha = 0.3f),
+        HorizontalDivider(
+            modifier = Modifier.padding(vertical = 16.dp),
             thickness = 1.dp,
-            modifier = Modifier.padding(vertical = 16.dp)
+            color = Color.White.copy(alpha = 0.3f)
         )
 
-        // Wykorzystanie komponentu minutnika
         TimerComponent(
             initialTime = 60,
             showTitle = true,
-            title = "Minutnik przygotowania"
         )
     }
 }

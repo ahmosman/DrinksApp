@@ -9,8 +9,9 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Brush
@@ -37,14 +38,21 @@ class MainActivity : ComponentActivity() {
 
 @Composable
 fun DrinksApp(dbHelper: DatabaseHelper) {
-    var currentScreen by remember { mutableStateOf<Screen>(Screen.Welcome) }
-    var selectedCocktail by remember { mutableStateOf<Cocktail?>(null) }
+    var currentScreenIndex by rememberSaveable { mutableIntStateOf(0) }
+    var selectedCocktail by rememberSaveable { mutableStateOf<Cocktail?>(null) }
 
     val backgroundGradient = Brush.verticalGradient(
         colors = listOf(
             Color(0xFF0B0B3B), Color(0xFF170B3B), Color(0xFF230B3B), Color(0xFF330B3B)
         )
     )
+
+    val currentScreen = when (currentScreenIndex) {
+        0 -> Screen.Welcome
+        1 -> Screen.CocktailList
+        2 -> Screen.CocktailDetails
+        else -> Screen.Welcome
+    }
 
     Box(
         modifier = Modifier
@@ -53,11 +61,11 @@ fun DrinksApp(dbHelper: DatabaseHelper) {
     ) {
         when (currentScreen) {
             is Screen.Welcome -> WelcomeScreen(
-                onShowListClick = { currentScreen = Screen.CocktailList },
+                onShowListClick = { currentScreenIndex = 1 },
                 onRandomDrinkClick = {
                     val cocktails = dbHelper.getCocktails()
                     selectedCocktail = cocktails.random()
-                    currentScreen = Screen.CocktailDetails
+                    currentScreenIndex = 2
                 }
             )
 
@@ -65,14 +73,14 @@ fun DrinksApp(dbHelper: DatabaseHelper) {
                 dbHelper = dbHelper,
                 onCocktailClick = { cocktail ->
                     selectedCocktail = dbHelper.getCocktailDetails(cocktail.id)
-                    currentScreen = Screen.CocktailDetails
+                    currentScreenIndex = 2
                 }, onBackClick = {
-                    currentScreen = Screen.Welcome
+                    currentScreenIndex = 0
                 })
 
             is Screen.CocktailDetails -> CocktailDetailsScreen(
                 cocktail = selectedCocktail!!,
-                onBackClick = { currentScreen = Screen.CocktailList })
+                onBackClick = { currentScreenIndex = 1 })
         }
     }
 }

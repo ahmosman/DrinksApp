@@ -20,7 +20,7 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -42,20 +42,28 @@ fun TimerComponent(
     showTitle: Boolean = true,
     title: String = "Minutnik"
 ) {
-    var initialSeconds by remember { mutableIntStateOf(initialTime) }
-    var remainingSeconds by remember { mutableIntStateOf(initialSeconds) }
-    var isRunning by remember { mutableStateOf(false) }
-    var inputText by remember { mutableStateOf(initialSeconds.toString()) }
+    var initialSeconds by rememberSaveable { mutableIntStateOf(initialTime) }
+    var remainingSeconds by rememberSaveable { mutableIntStateOf(initialSeconds) }
+    var isRunning by rememberSaveable { mutableStateOf(false) }
+    var inputText by rememberSaveable { mutableStateOf(initialSeconds.toString()) }
 
     val lifecycleOwner = LocalLifecycleOwner.current
+    var lastTimerState by rememberSaveable { mutableStateOf(Pair(false, 0)) }
 
-    // Obsługa cyklu życia komponentu
     DisposableEffect(lifecycleOwner) {
         val observer = LifecycleEventObserver { _, event ->
             if (event == Lifecycle.Event.ON_PAUSE) {
-                // Możliwość zapisania stanu timera
+                lastTimerState = Pair(isRunning, remainingSeconds)
+            } else if (event == Lifecycle.Event.ON_RESUME) {
+                // Przywróć stan minutnika
+                val (wasRunning, lastRemainingSeconds) = lastTimerState
+                if (wasRunning && lastRemainingSeconds > 0) {
+                    isRunning = true
+                    remainingSeconds = lastRemainingSeconds
+                }
             }
         }
+
         lifecycleOwner.lifecycle.addObserver(observer)
 
         onDispose {
@@ -130,7 +138,7 @@ fun TimerComponent(
                         }
                     }
                 },
-                label = { Text("Czas w sekundach") },
+                label = { Text("Time in seconds") },
                 keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
                 enabled = !isRunning,
                 modifier = Modifier.fillMaxWidth()
@@ -166,7 +174,7 @@ fun TimerComponent(
                         disabledContainerColor = Color.Gray
                     )
                 ) {
-                    Text("Stop")
+                    Text("Pause")
                 }
 
                 Button(
@@ -178,7 +186,7 @@ fun TimerComponent(
                         containerColor = Color(0xFFF44336)
                     )
                 ) {
-                    Text("Przerwij")
+                    Text("Stop")
                 }
             }
         }
