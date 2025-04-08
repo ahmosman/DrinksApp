@@ -83,9 +83,9 @@ LaunchedEffect(isRunning) {
     LaunchedEffect(isEditMode) {
         if (isEditMode) {
             kotlinx.coroutines.flow.combine(
-                snapshotFlow { hoursListState.firstVisibleItemIndex },
-                snapshotFlow { minutesListState.firstVisibleItemIndex },
-                snapshotFlow { secondsListState.firstVisibleItemIndex }
+                snapshotFlow { hoursListState.firstVisibleItemIndex - 1 },
+                snapshotFlow { minutesListState.firstVisibleItemIndex - 1 },
+                snapshotFlow { secondsListState.firstVisibleItemIndex - 1 }
             ) { hours, minutes, seconds ->
                 Triple(hours, minutes, seconds)
             }.collect { (hoursIndex, minutesIndex, secondsIndex) ->
@@ -264,7 +264,7 @@ fun TimePickerWheel(
 
     val selectedIndex by remember {
         derivedStateOf {
-            val rawIndex = listState.firstVisibleItemIndex + 2
+            val rawIndex = listState.firstVisibleItemIndex + 1
             val index = (rawIndex % items.size).let { if (it < 0) it + items.size else it }
             index.coerceIn(items.indices)
         }
