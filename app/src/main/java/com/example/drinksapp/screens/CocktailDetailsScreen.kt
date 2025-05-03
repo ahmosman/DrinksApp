@@ -1,11 +1,15 @@
 package com.example.drinksapp.screens
 
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Button
@@ -13,8 +17,12 @@ import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.asImageBitmap
+import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -24,6 +32,17 @@ import com.example.drinksapp.components.TimerComponent
 @Composable
 fun CocktailDetailsScreen(cocktail: Cocktail, onBackClick: () -> Unit) {
     val scrollState = rememberScrollState()
+    val configuration = LocalConfiguration.current
+
+    val imageWidthFraction = when {
+        configuration.screenWidthDp >= 600 -> 0.7f
+        else -> 0.5f
+    }
+
+    val imageAspectRatio = when {
+        configuration.screenWidthDp >= 600 -> 1f
+        else -> 0.8f
+    }
 
     Column(
         modifier = Modifier
@@ -51,6 +70,35 @@ fun CocktailDetailsScreen(cocktail: Cocktail, onBackClick: () -> Unit) {
                 )
             ) {
                 Text("Back")
+            }
+        }
+
+        Box(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(bottom = 16.dp),
+            contentAlignment = Alignment.Center
+        ) {
+            cocktail.bitmap?.let { bitmap ->
+                Image(
+                    bitmap = bitmap.asImageBitmap(),
+                    contentDescription = cocktail.name,
+                    contentScale = ContentScale.FillWidth,
+                    modifier = Modifier
+                        .widthIn(max = (configuration.screenWidthDp * imageWidthFraction).dp)
+                        .aspectRatio(imageAspectRatio)
+                )
+            } ?: Box(
+                modifier = Modifier
+                    .widthIn(max = (configuration.screenWidthDp * imageWidthFraction).dp)
+                    .aspectRatio(imageAspectRatio),
+                contentAlignment = Alignment.Center
+            ) {
+                Text(
+                    text = "No Image",
+                    color = Color.White,
+                    fontSize = 18.sp
+                )
             }
         }
 
