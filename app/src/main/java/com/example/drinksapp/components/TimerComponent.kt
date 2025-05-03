@@ -7,10 +7,15 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Pause
+import androidx.compose.material.icons.filled.PlayArrow
+import androidx.compose.material.icons.filled.Refresh
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
 import androidx.compose.runtime.*
 import androidx.compose.runtime.saveable.rememberSaveable
@@ -26,11 +31,6 @@ import androidx.lifecycle.LifecycleEventObserver
 import androidx.lifecycle.compose.LocalLifecycleOwner
 import kotlinx.coroutines.delay
 import java.util.Locale
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Pause
-import androidx.compose.material.icons.filled.PlayArrow
-import androidx.compose.material.icons.filled.Refresh
-import androidx.compose.material3.Icon
 
 @Composable
 fun TimerComponent(
@@ -55,45 +55,35 @@ fun TimerComponent(
         onDispose { lifecycleOwner.lifecycle.removeObserver(observer) }
     }
 
-// Logika odliczania
-LaunchedEffect(isRunning) {
-    if (isRunning) {
-        isEditMode = false
-        while (remainingSeconds > 0 && isRunning) {
-            delay(1000L)
-            remainingSeconds--
-        }
-        if (remainingSeconds == 0) {
-            isRunning = false
-            isEditMode = true  // Automatyczny powrót do trybu edycji po zakończeniu odliczania
+    // Logika odliczania
+    LaunchedEffect(isRunning) {
+        if (isRunning) {
+            isEditMode = false
+            while (remainingSeconds > 0 && isRunning) {
+                delay(1000L)
+                remainingSeconds--
+            }
+            if (remainingSeconds == 0) {
+                isRunning = false
+                isEditMode = true  // Automatyczny powrót do trybu edycji po zakończeniu odliczania
+            }
         }
     }
-}
 
-    val hoursOffset = calculateInitialOffset(24)
-    val minutesSecondsOffset = calculateInitialOffset(60)
+    val baseOffset = calculateInitialOffset(60)
 
-    val hoursListState = rememberLazyListState(initialFirstVisibleItemIndex = hoursOffset)
-    val minutesListState =
-        rememberLazyListState(initialFirstVisibleItemIndex = minutesSecondsOffset)
-    val secondsListState =
-        rememberLazyListState(initialFirstVisibleItemIndex = minutesSecondsOffset)
+    val minutesListState = rememberLazyListState(initialFirstVisibleItemIndex = baseOffset)
+    val secondsListState = rememberLazyListState(initialFirstVisibleItemIndex = baseOffset)
 
-// Aktualizacja czasu z kół wyboru
     LaunchedEffect(isEditMode) {
         if (isEditMode) {
-            kotlinx.coroutines.flow.combine(
-                snapshotFlow { hoursListState.firstVisibleItemIndex - 1 },
-                snapshotFlow { minutesListState.firstVisibleItemIndex - 1 },
-                snapshotFlow { secondsListState.firstVisibleItemIndex - 1 }
-            ) { hours, minutes, seconds ->
-                Triple(hours, minutes, seconds)
-            }.collect { (hoursIndex, minutesIndex, secondsIndex) ->
-                val hours = calculateTimeValue(hoursIndex, 24)
-                val minutes = calculateTimeValue(minutesIndex, 60)
-                val seconds = calculateTimeValue(secondsIndex, 60)
-
-                totalSeconds = hours * 3600 + minutes * 60 + seconds
+            snapshotFlow {
+                Pair(
+                    getSelectedTimeValue(minutesListState, 60),
+                    getSelectedTimeValue(secondsListState, 60)
+                )
+            }.collect { (minutes, seconds) ->
+                totalSeconds = minutes * 60 + seconds
                 remainingSeconds = totalSeconds
             }
         }
@@ -128,7 +118,6 @@ LaunchedEffect(isRunning) {
                 DisplayTime(remainingSeconds)
             } else {
                 TimeWheelPicker(
-                    hoursListState = hoursListState,
                     minutesListState = minutesListState,
                     secondsListState = secondsListState
                 )
@@ -157,9 +146,8 @@ private fun DisplayTime(seconds: Int) {
     Text(
         text = String.format(
             Locale.getDefault(),
-            "%02d:%02d:%02d",
-            seconds / 3600,
-            (seconds % 3600) / 60,
+            "%02d:%02d",
+            seconds / 60,
             seconds % 60
         ),
         color = Color.White,
@@ -174,7 +162,6 @@ private fun DisplayTime(seconds: Int) {
 
 @Composable
 private fun TimeWheelPicker(
-    hoursListState: LazyListState,
     minutesListState: LazyListState,
     secondsListState: LazyListState
 ) {
@@ -183,8 +170,6 @@ private fun TimeWheelPicker(
         horizontalArrangement = Arrangement.Center,
         verticalAlignment = Alignment.CenterVertically,
     ) {
-        TimePickerWheel(listState = hoursListState, items = (0..23).toList())
-        Text(":", color = Color.White, fontSize = 32.sp)
         TimePickerWheel(listState = minutesListState, items = (0..59).toList())
         Text(":", color = Color.White, fontSize = 32.sp)
         TimePickerWheel(listState = secondsListState, items = (0..59).toList())
@@ -264,9 +249,7 @@ fun TimePickerWheel(
 
     val selectedIndex by remember {
         derivedStateOf {
-            val rawIndex = listState.firstVisibleItemIndex + 1
-            val index = (rawIndex % items.size).let { if (it < 0) it + items.size else it }
-            index.coerceIn(items.indices)
+            getSelectedTimeValue(listState, items.size)
         }
     }
 
@@ -283,7 +266,7 @@ fun TimePickerWheel(
             modifier = Modifier.fillMaxWidth()
         ) {
             items(Int.MAX_VALUE) { index ->
-                val itemIndex = ((index % items.size) + items.size) % items.size
+                val itemIndex = index % items.size
                 val formattedValue = "%02d".format(items[itemIndex])
                 val alpha = if (itemIndex == selectedIndex) 1f else 0.3f
 
@@ -306,9 +289,24 @@ fun TimePickerWheel(
 
 // Funkcja pomocnicza do obliczania wartości czasu
 private fun calculateTimeValue(listIndex: Int, modulo: Int): Int {
-    return ((listIndex + 2) % modulo).let { if (it < 0) it + modulo else it }
+    return (listIndex + 1) % modulo
 }
 
 private fun calculateInitialOffset(modulo: Int): Int {
-    return (Int.MAX_VALUE / 2) - ((Int.MAX_VALUE / 2) % modulo) - 2
+    return (Int.MAX_VALUE / 2) - ((Int.MAX_VALUE / 2) % modulo) - 1
+}
+
+private fun getSelectedTimeValue(listState: LazyListState, modulo: Int): Int {
+    val visibleItems = listState.layoutInfo.visibleItemsInfo
+    if (visibleItems.isEmpty()) return 0
+
+    val viewportHeight = listState.layoutInfo.viewportEndOffset -
+            listState.layoutInfo.viewportStartOffset
+    val viewportCenter = viewportHeight / 2 + listState.layoutInfo.viewportStartOffset
+
+    val targetItem = visibleItems.minByOrNull { item ->
+        kotlin.math.abs((item.offset + item.size / 2) - viewportCenter)
+    }
+
+    return (targetItem?.index ?: 0) % modulo
 }
