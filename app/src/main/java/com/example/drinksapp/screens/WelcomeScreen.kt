@@ -15,8 +15,17 @@ import androidx.compose.ui.unit.dp
 import com.example.drinksapp.components.LogoComponent
 
 @Composable
-fun WelcomeScreen(onShowListClick: () -> Unit, onRandomDrinkClick: () -> Unit) {
-    AppScaffold(isWelcomeScreen = true) { paddingValues ->
+fun WelcomeScreen(
+    onShowListClick: () -> Unit,
+    onRandomDrinkClick: () -> Unit,
+    currentRoute: String,
+    onNavigate: (String) -> Unit
+) {
+    AppScaffold(
+        isWelcomeScreen = true,
+        currentRoute = currentRoute,
+        onNavigate = onNavigate
+    ) { paddingValues ->
         Column(
             modifier = Modifier
                 .fillMaxSize()

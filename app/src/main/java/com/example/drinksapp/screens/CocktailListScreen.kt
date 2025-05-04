@@ -5,7 +5,6 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
-import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -13,8 +12,6 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items
-import androidx.compose.material3.Button
-import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.OutlinedTextField
@@ -44,40 +41,29 @@ import com.example.drinksapp.DatabaseHelper
 fun CocktailListScreen(
     dbHelper: DatabaseHelper,
     onCocktailClick: (Cocktail) -> Unit,
-    onBackClick: () -> Unit
+    currentRoute: String,
+    onNavigate: (String) -> Unit
 ) {
     var searchQuery by remember { mutableStateOf("") }
     val cocktails = remember { dbHelper.getCocktails() }
     val filteredCocktails = cocktails.filter { it.name.contains(searchQuery, ignoreCase = true) }
 
-    AppScaffold { paddingValues ->
+    AppScaffold(
+        currentRoute = currentRoute,
+        onNavigate = onNavigate
+    ) { paddingValues ->
         Column(
             modifier = Modifier
                 .fillMaxSize()
                 .padding(paddingValues)
         ) {
-            Row(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(16.dp),
-                horizontalArrangement = Arrangement.SpaceBetween
-            ) {
-                Text(
-                    text = "Cocktail List",
-                    color = Color.White,
-                    fontSize = 24.sp,
-                    fontWeight = FontWeight.Bold
-                )
-
-                Button(
-                    onClick = onBackClick,
-                    colors = ButtonDefaults.buttonColors(
-                        containerColor = Color(0xFF9C27B0)
-                    )
-                ) {
-                    Text("Back")
-                }
-            }
+            Text(
+                text = "Cocktail List",
+                color = Color.White,
+                fontSize = 24.sp,
+                fontWeight = FontWeight.Bold,
+                modifier = Modifier.padding(16.dp)
+            )
 
             OutlinedTextField(
                 value = searchQuery,

@@ -1,9 +1,7 @@
 package com.example.drinksapp.screens
 
-import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -11,8 +9,6 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.material3.Button
-import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -30,9 +26,12 @@ import coil.request.ImageRequest
 import com.example.drinksapp.Cocktail
 import com.example.drinksapp.components.TimerComponent
 
-
 @Composable
-fun CocktailDetailsScreen(cocktail: Cocktail, onBackClick: () -> Unit) {
+fun CocktailDetailsScreen(
+    cocktail: Cocktail,
+    currentRoute: String,
+    onNavigate: (String) -> Unit
+) {
     val scrollState = rememberScrollState()
     val configuration = LocalConfiguration.current
 
@@ -46,7 +45,10 @@ fun CocktailDetailsScreen(cocktail: Cocktail, onBackClick: () -> Unit) {
         else -> 0.8f
     }
 
-    AppScaffold { paddingValues ->
+    AppScaffold(
+        currentRoute = currentRoute,
+        onNavigate = onNavigate
+    ) { paddingValues ->
         Column(
             modifier = Modifier
                 .fillMaxSize()
@@ -54,33 +56,18 @@ fun CocktailDetailsScreen(cocktail: Cocktail, onBackClick: () -> Unit) {
                 .padding(
                     start = 16.dp,
                     end = 16.dp,
-                    top = 0.dp,
+                    top = 16.dp,
                     bottom = 16.dp
                 )
                 .verticalScroll(scrollState)
         ) {
-            Row(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(bottom = 16.dp),
-                horizontalArrangement = Arrangement.SpaceBetween
-            ) {
-                Text(
-                    text = cocktail.name,
-                    color = Color.White,
-                    fontSize = 24.sp,
-                    fontWeight = FontWeight.Bold
-                )
-
-                Button(
-                    onClick = onBackClick,
-                    colors = ButtonDefaults.buttonColors(
-                        containerColor = Color(0xFF9C27B0)
-                    )
-                ) {
-                    Text("Back")
-                }
-            }
+            Text(
+                text = cocktail.name,
+                color = Color.White,
+                fontSize = 24.sp,
+                fontWeight = FontWeight.Bold,
+                modifier = Modifier.padding(bottom = 16.dp)
+            )
 
             Box(
                 modifier = Modifier

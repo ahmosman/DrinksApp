@@ -6,13 +6,12 @@ import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
+import com.example.drinksapp.screens.CategoriesScreen
 import com.example.drinksapp.screens.CocktailDetailsScreen
 import com.example.drinksapp.screens.CocktailListScreen
-import com.example.drinksapp.screens.Screen
 import com.example.drinksapp.screens.WelcomeScreen
 
 class MainActivity : ComponentActivity() {
@@ -32,37 +31,48 @@ class MainActivity : ComponentActivity() {
 
 @Composable
 fun DrinksApp(dbHelper: DatabaseHelper) {
-    var currentScreenIndex by rememberSaveable { mutableIntStateOf(0) }
+    var currentRoute by rememberSaveable { mutableStateOf("welcome") }
     var selectedCocktail by rememberSaveable { mutableStateOf<Cocktail?>(null) }
 
-    val currentScreen = when (currentScreenIndex) {
-        0 -> Screen.Welcome
-        1 -> Screen.CocktailList
-        2 -> Screen.CocktailDetails
-        else -> Screen.Welcome
+    val handleNavigation: (String) -> Unit = { route ->
+        if (route == "random") {
+            val cocktails = dbHelper.getCocktails()
+            if (cocktails.isNotEmpty()) {
+                selectedCocktail = cocktails.random()
+                currentRoute = "details"
+            }
+        } else {
+            currentRoute = route
+        }
     }
 
-    when (currentScreen) {
-        is Screen.Welcome -> WelcomeScreen(
-            onShowListClick = { currentScreenIndex = 1 },
-            onRandomDrinkClick = {
-                val cocktails = dbHelper.getCocktails()
-                selectedCocktail = cocktails.random()
-                currentScreenIndex = 2
-            }
+    when (currentRoute) {
+        "welcome" -> WelcomeScreen(
+            onShowListClick = { handleNavigation("list") },
+            onRandomDrinkClick = { handleNavigation("random") },
+            currentRoute = currentRoute,
+            onNavigate = handleNavigation
         )
 
-        is Screen.CocktailList -> CocktailListScreen(
+        "categories" -> CategoriesScreen(
+            currentRoute = currentRoute,
+            onNavigate = handleNavigation
+        )
+
+        "list" -> CocktailListScreen(
             dbHelper = dbHelper,
             onCocktailClick = { cocktail ->
                 selectedCocktail = dbHelper.getCocktailDetails(cocktail.id)
-                currentScreenIndex = 2
-            }, onBackClick = {
-                currentScreenIndex = 0
-            })
+                currentRoute = "details"
+            },
+            currentRoute = currentRoute,
+            onNavigate = handleNavigation
+        )
 
-        is Screen.CocktailDetails -> CocktailDetailsScreen(
+        "details" -> CocktailDetailsScreen(
             cocktail = selectedCocktail!!,
-            onBackClick = { currentScreenIndex = 1 })
+            currentRoute = currentRoute,
+            onNavigate = handleNavigation
+        )
     }
 }
