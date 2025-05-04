@@ -11,42 +11,39 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
+import com.example.drinksapp.components.LogoComponent
 
 @Composable
 fun WelcomeScreen(onShowListClick: () -> Unit, onRandomDrinkClick: () -> Unit) {
-    Column(
-        modifier = Modifier.fillMaxSize(),
-        horizontalAlignment = Alignment.CenterHorizontally,
-        verticalArrangement = Arrangement.Center
-    ) {
-        Text(
-            text = "DrinksApp",
-            color = Color.White,
-            fontSize = 32.sp,
-            fontWeight = FontWeight.Bold,
-            modifier = Modifier.padding(bottom = 32.dp)
-        )
-
-        Button(
-            onClick = onShowListClick,
-            colors = ButtonDefaults.buttonColors(
-                containerColor = Color(0xFF9C27B0)
-            )
+    AppScaffold(isWelcomeScreen = true) { paddingValues ->
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(paddingValues),
+            horizontalAlignment = Alignment.CenterHorizontally,
+            verticalArrangement = Arrangement.Center
         ) {
-            Text("Show list")
-        }
+            LogoComponent(horizontal = false)
 
-        Button(
-            onClick = onRandomDrinkClick,
-            colors = ButtonDefaults.buttonColors(
-                containerColor = Color(0xFF9C27B0)
-            ),
-            modifier = Modifier.padding(top = 16.dp)
-        ) {
-            Text("Random drink")
+            Button(
+                onClick = onShowListClick,
+                colors = ButtonDefaults.buttonColors(
+                    containerColor = Color(0xFF9C27B0)
+                )
+            ) {
+                Text("Show list")
+            }
+
+            Button(
+                onClick = onRandomDrinkClick,
+                colors = ButtonDefaults.buttonColors(
+                    containerColor = Color(0xFF9C27B0)
+                ),
+                modifier = Modifier.padding(top = 16.dp)
+            ) {
+                Text("Random drink")
+            }
         }
     }
 }

@@ -16,6 +16,8 @@ class DatabaseHelper(context: Context) :
         if (!dbFile.exists()) {
             copyDatabase(context)
         }
+//        copyDatabase(context)
+
         loadCocktails()
     }
 

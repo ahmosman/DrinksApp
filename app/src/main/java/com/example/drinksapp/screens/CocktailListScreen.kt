@@ -1,6 +1,5 @@
 package com.example.drinksapp.screens
 
-import androidx.compose.foundation.Image
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -28,14 +27,16 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import coil.compose.AsyncImage
+import coil.request.ImageRequest
 import com.example.drinksapp.Cocktail
 import com.example.drinksapp.DatabaseHelper
 
@@ -49,49 +50,55 @@ fun CocktailListScreen(
     val cocktails = remember { dbHelper.getCocktails() }
     val filteredCocktails = cocktails.filter { it.name.contains(searchQuery, ignoreCase = true) }
 
-    Column(modifier = Modifier.fillMaxSize()) {
-        Row(
+    AppScaffold { paddingValues ->
+        Column(
             modifier = Modifier
-                .fillMaxWidth()
-                .padding(16.dp),
-            horizontalArrangement = Arrangement.SpaceBetween
+                .fillMaxSize()
+                .padding(paddingValues)
         ) {
-            Text(
-                text = "Cocktail List",
-                color = Color.White,
-                fontSize = 24.sp,
-                fontWeight = FontWeight.Bold
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(16.dp),
+                horizontalArrangement = Arrangement.SpaceBetween
+            ) {
+                Text(
+                    text = "Cocktail List",
+                    color = Color.White,
+                    fontSize = 24.sp,
+                    fontWeight = FontWeight.Bold
+                )
+
+                Button(
+                    onClick = onBackClick,
+                    colors = ButtonDefaults.buttonColors(
+                        containerColor = Color(0xFF9C27B0)
+                    )
+                ) {
+                    Text("Back")
+                }
+            }
+
+            OutlinedTextField(
+                value = searchQuery,
+                onValueChange = { searchQuery = it },
+                label = { Text("Search") },
+                textStyle = TextStyle(color = Color.LightGray),
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 16.dp, vertical = 8.dp)
             )
 
-            Button(
-                onClick = onBackClick,
-                colors = ButtonDefaults.buttonColors(
-                    containerColor = Color(0xFF9C27B0)
-                )
+            LazyVerticalGrid(
+                columns = GridCells.Fixed(2),
+                contentPadding = PaddingValues(8.dp),
+                horizontalArrangement = Arrangement.spacedBy(8.dp),
+                verticalArrangement = Arrangement.spacedBy(8.dp),
+                modifier = Modifier.fillMaxSize()
             ) {
-                Text("Back")
-            }
-        }
-
-        OutlinedTextField(
-            value = searchQuery,
-            onValueChange = { searchQuery = it },
-            label = { Text("Search") },
-            textStyle = TextStyle(color = Color.LightGray),
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(horizontal = 16.dp, vertical = 8.dp)
-        )
-
-        LazyVerticalGrid(
-            columns = GridCells.Fixed(2),
-            contentPadding = PaddingValues(8.dp),
-            horizontalArrangement = Arrangement.spacedBy(8.dp),
-            verticalArrangement = Arrangement.spacedBy(8.dp),
-            modifier = Modifier.fillMaxSize()
-        ) {
-            items(filteredCocktails) { cocktail ->
-                CocktailCard(cocktail, onCocktailClick)
+                items(filteredCocktails) { cocktail ->
+                    CocktailCard(cocktail, onCocktailClick)
+                }
             }
         }
     }
@@ -105,32 +112,35 @@ fun CocktailCard(cocktail: Cocktail, onClick: (Cocktail) -> Unit) {
             .aspectRatio(0.75f)
             .clickable { onClick(cocktail) },
         elevation = CardDefaults.cardElevation(defaultElevation = 4.dp),
-        colors = CardDefaults.cardColors(containerColor = Color(0x33FFFFFF)) // Zwiększona przezroczystość tła
+        colors = CardDefaults.cardColors(containerColor = Color(0x33FFFFFF))
     ) {
         Column {
-            // Obraz zajmuje większą część karty
-            cocktail.bitmap?.let { bitmap ->
-                Image(
-                    bitmap = bitmap.asImageBitmap(),
-                    contentDescription = cocktail.name,
-                    contentScale = ContentScale.Crop,
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .weight(0.8f)
-                )
-            } ?: Box(
+            Box(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .weight(0.8f),
-                contentAlignment = Alignment.Center
+                    .weight(0.8f)
             ) {
-                Text(
-                    text = "No Image",
-                    color = Color.White
-                )
+                cocktail.imageBlob?.let { blob ->
+                    AsyncImage(
+                        model = ImageRequest.Builder(LocalContext.current)
+                            .data(blob)
+                            .crossfade(true)
+                            .build(),
+                        contentDescription = cocktail.name,
+                        contentScale = ContentScale.Crop,
+                        modifier = Modifier.fillMaxSize()
+                    )
+                } ?: Box(
+                    modifier = Modifier.fillMaxSize(),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Text(
+                        text = "No Image",
+                        color = Color.White
+                    )
+                }
             }
 
-            // Sekcja z tekstem jest mniejsza
             Box(
                 modifier = Modifier
                     .fillMaxWidth()
