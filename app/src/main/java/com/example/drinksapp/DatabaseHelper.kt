@@ -41,13 +41,14 @@ class DatabaseHelper(context: Context) :
 
     private fun loadCocktails() {
         val db = readableDatabase
-        val cursor = db.rawQuery("SELECT cocktail_id, name, recipe, image FROM cocktails", null)
+        val cursor = db.rawQuery("SELECT cocktail_id, name, recipe, image, category FROM cocktails", null)
         cursor.use {
             while (it.moveToNext()) {
                 val id = it.getInt(0)
                 val name = it.getString(1)
                 val recipe = it.getString(2)
                 val image = if (!it.isNull(3)) it.getBlob(3) else null
+                val category = it.getString(4)
                 val ingredientsCursor = db.rawQuery(
                     "SELECT ingredient_name FROM ingredients WHERE cocktail_id = ?",
                     arrayOf(id.toString())
@@ -57,7 +58,7 @@ class DatabaseHelper(context: Context) :
                         .map { ingCursor.getString(0) }
                         .toList()
                 }
-                cocktails.add(Cocktail(id, name, image, recipe, ingredients))
+                cocktails.add(Cocktail(id, name, category, image, recipe, ingredients))
             }
         }
     }

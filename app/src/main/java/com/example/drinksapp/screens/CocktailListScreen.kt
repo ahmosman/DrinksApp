@@ -44,12 +44,19 @@ fun CocktailListScreen(
     currentRoute: String,
     onNavigate: (String) -> Unit
 ) {
+    val category = currentRoute.substringAfter("?category=", "all")
+
     var searchQuery by remember { mutableStateOf("") }
     val cocktails = remember { dbHelper.getCocktails() }
-    val filteredCocktails = cocktails.filter { it.name.contains(searchQuery, ignoreCase = true) }
+
+    val filteredCocktails = remember(cocktails, category, searchQuery) {
+        cocktails
+            .filter { if (category != "all") it.category == category else true }
+            .filter { it.name.contains(searchQuery, ignoreCase = true) }
+    }
 
     AppScaffold(
-        currentRoute = currentRoute,
+        currentRoute = "list",
         onNavigate = onNavigate
     ) { paddingValues ->
         Column(
@@ -58,7 +65,7 @@ fun CocktailListScreen(
                 .padding(paddingValues)
         ) {
             Text(
-                text = "Cocktail List",
+                text = if (category == "all") "All Cocktails" else "Category: $category",
                 color = Color.White,
                 fontSize = 24.sp,
                 fontWeight = FontWeight.Bold,

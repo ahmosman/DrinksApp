@@ -66,6 +66,14 @@ fun CocktailDetailsScreen(
                 color = Color.White,
                 fontSize = 24.sp,
                 fontWeight = FontWeight.Bold,
+                modifier = Modifier.padding(bottom = 4.dp)
+            )
+
+            Text(
+                text = "Category: ${cocktail.category}",
+                color = Color.White.copy(alpha = 0.8f),
+                fontSize = 16.sp,
+                fontStyle = androidx.compose.ui.text.font.FontStyle.Italic,
                 modifier = Modifier.padding(bottom = 16.dp)
             )
 

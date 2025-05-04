@@ -7,6 +7,7 @@ import kotlinx.parcelize.Parcelize
 data class Cocktail(
     val id: Int,
     val name: String,
+    val category: String,
     val imageBlob: ByteArray? = null,
     val recipe: String,
     val ingredients: List<String>

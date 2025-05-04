@@ -46,20 +46,21 @@ fun DrinksApp(dbHelper: DatabaseHelper) {
         }
     }
 
-    when (currentRoute) {
-        "welcome" -> WelcomeScreen(
-            onShowListClick = { handleNavigation("list") },
+    when {
+        currentRoute == "welcome" -> WelcomeScreen(
+            onShowListClick = { handleNavigation("list?category=all") },
             onRandomDrinkClick = { handleNavigation("random") },
             currentRoute = currentRoute,
             onNavigate = handleNavigation
         )
 
-        "categories" -> CategoriesScreen(
+        currentRoute == "categories" -> CategoriesScreen(
             currentRoute = currentRoute,
-            onNavigate = handleNavigation
+            onNavigate = handleNavigation,
+            dbHelper = dbHelper
         )
 
-        "list" -> CocktailListScreen(
+        currentRoute.startsWith("list") -> CocktailListScreen(
             dbHelper = dbHelper,
             onCocktailClick = { cocktail ->
                 selectedCocktail = dbHelper.getCocktailDetails(cocktail.id)
@@ -69,7 +70,7 @@ fun DrinksApp(dbHelper: DatabaseHelper) {
             onNavigate = handleNavigation
         )
 
-        "details" -> CocktailDetailsScreen(
+        currentRoute == "details" -> CocktailDetailsScreen(
             cocktail = selectedCocktail!!,
             currentRoute = currentRoute,
             onNavigate = handleNavigation

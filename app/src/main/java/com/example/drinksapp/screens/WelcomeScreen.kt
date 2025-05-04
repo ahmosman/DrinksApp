@@ -45,6 +45,16 @@ fun WelcomeScreen(
             }
 
             Button(
+                onClick = { onNavigate("categories") },
+                colors = ButtonDefaults.buttonColors(
+                    containerColor = Color(0xFF9C27B0)
+                ),
+                modifier = Modifier.padding(top = 16.dp)
+            ) {
+                Text("Categories")
+            }
+
+            Button(
                 onClick = onRandomDrinkClick,
                 colors = ButtonDefaults.buttonColors(
                     containerColor = Color(0xFF9C27B0)
