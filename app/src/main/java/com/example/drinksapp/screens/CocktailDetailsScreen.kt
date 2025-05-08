@@ -10,7 +10,6 @@ import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
@@ -34,6 +33,11 @@ import coil.compose.AsyncImage
 import coil.request.ImageRequest
 import com.example.drinksapp.Cocktail
 import com.example.drinksapp.components.TimerComponent
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Row
+import androidx.compose.ui.text.font.FontStyle
+import android.content.res.Configuration
+import androidx.compose.foundation.layout.fillMaxHeight
 
 @Composable
 fun CocktailDetailsScreen(
@@ -45,15 +49,8 @@ fun CocktailDetailsScreen(
     val configuration = LocalConfiguration.current
     val context = LocalContext.current
 
-    val imageWidthFraction = when {
-        configuration.screenWidthDp >= 600 -> 0.7f
-        else -> 0.5f
-    }
-
-    val imageAspectRatio = when {
-        configuration.screenWidthDp >= 600 -> 1f
-        else -> 0.8f
-    }
+    val isLandscapeLayout = configuration.orientation == Configuration.ORIENTATION_LANDSCAPE ||
+            configuration.screenWidthDp >= 600
 
     AppScaffold(
         currentRoute = currentRoute,
@@ -78,93 +75,55 @@ fun CocktailDetailsScreen(
             modifier = Modifier
                 .fillMaxSize()
                 .padding(paddingValues)
-                .padding(
-                    start = 16.dp,
-                    end = 16.dp,
-                    top = 16.dp,
-                    bottom = 16.dp
-                )
+                .padding(16.dp)
                 .verticalScroll(scrollState)
         ) {
-            Text(
-                text = cocktail.name,
-                color = Color.White,
-                fontSize = 24.sp,
-                fontWeight = FontWeight.Bold,
-                modifier = Modifier.padding(bottom = 4.dp)
-            )
-
-            Text(
-                text = "Category: ${cocktail.category}",
-                color = Color.White.copy(alpha = 0.8f),
-                fontSize = 16.sp,
-                fontStyle = androidx.compose.ui.text.font.FontStyle.Italic,
-                modifier = Modifier.padding(bottom = 16.dp)
-            )
-
-            Box(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(bottom = 16.dp),
-                contentAlignment = Alignment.Center
-            ) {
-                cocktail.imageBlob?.let { blob ->
-                    AsyncImage(
-                        model = ImageRequest.Builder(LocalContext.current)
-                            .data(blob)
-                            .crossfade(true)
-                            .build(),
-                        contentDescription = cocktail.name,
-                        contentScale = ContentScale.FillWidth,
-                        modifier = Modifier
-                            .widthIn(max = (configuration.screenWidthDp * imageWidthFraction).dp)
-                            .aspectRatio(imageAspectRatio)
-                    )
-                } ?: Box(
-                    modifier = Modifier
-                        .widthIn(max = (configuration.screenWidthDp * imageWidthFraction).dp)
-                        .aspectRatio(imageAspectRatio),
-                    contentAlignment = Alignment.Center
-                ) {
-                    Text(
-                        text = "No Image",
-                        color = Color.White,
-                        fontSize = 18.sp
-                    )
-                }
-            }
-
-            Text(
-                text = "Ingredients:",
-                color = Color.White,
-                fontSize = 18.sp,
-                fontWeight = FontWeight.Bold,
-                modifier = Modifier.padding(bottom = 8.dp)
-            )
-
-            cocktail.ingredients.forEach { ingredient ->
+            Column(modifier = Modifier.fillMaxWidth()) {
                 Text(
-                    text = "• $ingredient",
+                    text = cocktail.name,
                     color = Color.White,
+                    fontSize = 24.sp,
+                    fontWeight = FontWeight.Bold
+                )
+
+                Text(
+                    text = "Category: ${cocktail.category}",
+                    color = Color.White.copy(alpha = 0.8f),
                     fontSize = 16.sp,
-                    modifier = Modifier.padding(bottom = 4.dp)
+                    fontStyle = FontStyle.Italic,
+                    modifier = Modifier.padding(bottom = 16.dp)
                 )
             }
 
-            Text(
-                text = "Recipe:",
-                color = Color.White,
-                fontSize = 18.sp,
-                fontWeight = FontWeight.Bold,
-                modifier = Modifier.padding(vertical = 8.dp)
-            )
+            if (isLandscapeLayout) {
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth(),
+                    horizontalArrangement = Arrangement.spacedBy(16.dp),
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Box(
+                        modifier = Modifier
+                            .weight(0.35f)
+                            .fillMaxHeight(),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        CocktailImage(cocktail, true)
+                    }
 
-            Text(
-                text = cocktail.recipe,
-                color = Color.White,
-                fontSize = 16.sp,
-                modifier = Modifier.padding(bottom = 16.dp)
-            )
+                    Column(
+                        modifier = Modifier
+                            .weight(0.65f)
+                            .fillMaxHeight(),
+                        verticalArrangement = Arrangement.Center
+                    ) {
+                        IngredientsAndRecipeContent(cocktail)
+                    }
+                }
+            } else {
+                CocktailImage(cocktail, false)
+                IngredientsAndRecipeContent(cocktail)
+            }
 
             HorizontalDivider(
                 modifier = Modifier.padding(vertical = 16.dp),
@@ -172,11 +131,85 @@ fun CocktailDetailsScreen(
                 color = Color.White.copy(alpha = 0.3f)
             )
 
-            TimerComponent(
-                showTitle = false,
+            TimerComponent(showTitle = false)
+        }
+    }
+}
+
+@Composable
+private fun CocktailImage(cocktail: Cocktail, isLandscapeLayout: Boolean) {
+    val imageModifier = if (isLandscapeLayout) {
+        Modifier
+            .fillMaxWidth()
+            .aspectRatio(0.9f)
+    } else {
+        Modifier
+            .fillMaxWidth()
+            .aspectRatio(0.8f)
+    }
+
+    Box(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(bottom = 8.dp),
+        contentAlignment = Alignment.Center
+    ) {
+        cocktail.imageBlob?.let { blob ->
+            AsyncImage(
+                model = ImageRequest.Builder(LocalContext.current)
+                    .data(blob)
+                    .crossfade(true)
+                    .build(),
+                contentDescription = cocktail.name,
+                contentScale = ContentScale.Fit,
+                modifier = imageModifier
+            )
+        } ?: Box(
+            modifier = imageModifier,
+            contentAlignment = Alignment.Center
+        ) {
+            Text(
+                text = "No Image",
+                color = Color.White,
+                fontSize = 18.sp
             )
         }
     }
+}
+
+@Composable
+private fun IngredientsAndRecipeContent(cocktail: Cocktail) {
+    Text(
+        text = "Ingredients:",
+        color = Color.White,
+        fontSize = 18.sp,
+        fontWeight = FontWeight.Bold,
+        modifier = Modifier.padding(bottom = 8.dp)
+    )
+
+    cocktail.ingredients.forEach { ingredient ->
+        Text(
+            text = "• $ingredient",
+            color = Color.White,
+            fontSize = 16.sp,
+            modifier = Modifier.padding(bottom = 4.dp)
+        )
+    }
+
+    Text(
+        text = "Recipe:",
+        color = Color.White,
+        fontSize = 18.sp,
+        fontWeight = FontWeight.Bold,
+        modifier = Modifier.padding(vertical = 8.dp)
+    )
+
+    Text(
+        text = cocktail.recipe,
+        color = Color.White,
+        fontSize = 16.sp,
+        modifier = Modifier.padding(bottom = 16.dp)
+    )
 }
 
 

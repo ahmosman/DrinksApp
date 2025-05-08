@@ -19,7 +19,7 @@ import coil.decode.SvgDecoder
 import coil.request.ImageRequest
 
 @Composable
-fun LogoComponent(horizontal: Boolean) {
+fun LogoComponent(horizontal: Boolean = false, compact: Boolean = false) {
     val context = LocalContext.current
     val logo = ImageRequest.Builder(context)
         .data("file:///android_asset/drinksapp_logo.svg")
@@ -33,12 +33,12 @@ fun LogoComponent(horizontal: Boolean) {
             AsyncImage(
                 model = logo,
                 contentDescription = "Logo",
-                modifier = Modifier.size(48.dp)
+                modifier = Modifier.size(if (compact) 32.dp else 48.dp)
             )
             Text(
                 text = "DrinksApp",
                 color = Color.White,
-                fontSize = 28.sp,
+                fontSize = if (compact) 20.sp else 28.sp,
                 fontWeight = FontWeight.Bold
             )
         }
@@ -49,12 +49,12 @@ fun LogoComponent(horizontal: Boolean) {
             AsyncImage(
                 model = logo,
                 contentDescription = "Logo",
-                modifier = Modifier.size(200.dp)
+                modifier = Modifier.size(if (compact) 150.dp else 200.dp)
             )
             Text(
                 text = "DrinksApp",
                 color = Color.White,
-                fontSize = 32.sp,
+                fontSize = if (compact) 26.sp else 32.sp,
                 fontWeight = FontWeight.Bold,
                 modifier = Modifier
                     .offset(y = (-20).dp)

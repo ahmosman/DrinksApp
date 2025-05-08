@@ -1,12 +1,16 @@
 package com.example.drinksapp.screens
 
+import android.content.res.Configuration
 import androidx.compose.foundation.background
 import androidx.compose.foundation.gestures.detectHorizontalDragGestures
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Category
 import androidx.compose.material.icons.filled.GridView
@@ -28,7 +32,9 @@ import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.input.pointer.pointerInput
+import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import com.example.drinksapp.components.LogoComponent
 import kotlin.math.abs
 
@@ -72,6 +78,13 @@ fun AppScaffold(
     var dragStartX by remember { mutableStateOf(0f) }
     var dragEndX by remember { mutableStateOf(0f) }
 
+    val configuration = LocalConfiguration.current
+    val isLandscape = configuration.orientation == Configuration.ORIENTATION_LANDSCAPE
+
+    val topPadding = if (isLandscape) 8.dp else 24.dp
+    val bottomPadding = if (isLandscape) 1.dp else 1.dp
+    val barHeight = if (isLandscape) 50.dp else 70.dp
+
     val handleSwipe = { endX: Float ->
         val diff = endX - dragStartX
         if (abs(diff) > 2) {
@@ -98,9 +111,15 @@ fun AppScaffold(
                     modifier = Modifier
                         .fillMaxWidth()
                         .background(cosmosGradient)
-                        .padding(start = 16.dp, end = 16.dp, top = 24.dp, bottom = 1.dp)
+                        .padding(
+                            start = 16.dp,
+                            end = 16.dp,
+                            top = topPadding,
+                            bottom = bottomPadding
+                        )
+                        .height(if (isLandscape) barHeight.times(0.8f) else barHeight)
                 ) {
-                    LogoComponent(horizontal = true)
+                    LogoComponent(horizontal = true, compact = isLandscape)
                 }
             }
         },
@@ -109,7 +128,8 @@ fun AppScaffold(
                 NavigationBar(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .background(cosmosGradient),
+                        .background(cosmosGradient)
+                        .height(if (isLandscape) barHeight.times(1.7f) else barHeight.times(1.5f)),
                     containerColor = Color.Transparent
                 ) {
                     navigationItems.forEach { item ->
