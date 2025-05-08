@@ -44,6 +44,7 @@ fun AppScaffold(
     isWelcomeScreen: Boolean = false,
     currentRoute: String = "",
     onNavigate: (String) -> Unit = {},
+    floatingActionButton: @Composable () -> Unit = {},
     content: @Composable (PaddingValues) -> Unit
 ) {
     val backgroundGradient = Brush.verticalGradient(
@@ -90,6 +91,7 @@ fun AppScaffold(
         modifier = modifier,
         containerColor = Color.Transparent,
         contentColor = Color.White,
+        floatingActionButton = floatingActionButton,
         topBar = {
             if (!isWelcomeScreen) {
                 Box(

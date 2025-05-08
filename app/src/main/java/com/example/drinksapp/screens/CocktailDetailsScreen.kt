@@ -1,5 +1,9 @@
 package com.example.drinksapp.screens
 
+import android.content.ActivityNotFoundException
+import android.content.Context
+import android.content.Intent
+import android.widget.Toast
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.aspectRatio
@@ -9,7 +13,11 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.Send
+import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.HorizontalDivider
+import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
@@ -21,6 +29,7 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.core.net.toUri
 import coil.compose.AsyncImage
 import coil.request.ImageRequest
 import com.example.drinksapp.Cocktail
@@ -34,6 +43,7 @@ fun CocktailDetailsScreen(
 ) {
     val scrollState = rememberScrollState()
     val configuration = LocalConfiguration.current
+    val context = LocalContext.current
 
     val imageWidthFraction = when {
         configuration.screenWidthDp >= 600 -> 0.7f
@@ -47,7 +57,22 @@ fun CocktailDetailsScreen(
 
     AppScaffold(
         currentRoute = currentRoute,
-        onNavigate = onNavigate
+        onNavigate = onNavigate,
+        floatingActionButton = {
+            FloatingActionButton(
+                onClick = {
+                    val smsText = buildSmsText(cocktail)
+                    sendSms(context, smsText)
+                },
+                containerColor = Color(0xFF9C27B0)
+            ) {
+                Icon(
+                    imageVector = Icons.AutoMirrored.Filled.Send,
+                    contentDescription = "Send SMS with Cocktail",
+                    tint = Color.White
+                )
+            }
+        }
     ) { paddingValues ->
         Column(
             modifier = Modifier
@@ -151,5 +176,36 @@ fun CocktailDetailsScreen(
                 showTitle = false,
             )
         }
+    }
+}
+
+
+private fun buildSmsText(cocktail: Cocktail): String {
+    val sb = StringBuilder()
+    sb.append("Cocktail: '${cocktail.name}':\n\n")
+
+    sb.append("Ingredients:\n")
+    cocktail.ingredients.forEachIndexed { index, ingredient ->
+        sb.append("${index + 1}. $ingredient\n")
+    }
+    sb.append("\nRecipe:\n")
+    sb.append(cocktail.recipe)
+
+    return sb.toString()
+}
+
+private fun sendSms(context: Context, message: String) {
+    val intent = Intent(Intent.ACTION_SENDTO).apply {
+        data = "smsto:".toUri()
+        putExtra("sms_body", message)
+    }
+    try {
+        context.startActivity(intent)
+    } catch (e: ActivityNotFoundException) {
+        Toast.makeText(
+            context,
+            "No SMS app found",
+            Toast.LENGTH_SHORT
+        ).show()
     }
 }
