@@ -1,5 +1,6 @@
 package com.example.drinksapp.screens
 
+import android.content.res.Configuration
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -20,6 +21,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
@@ -32,7 +34,9 @@ fun CategoriesScreen(
     onNavigate: (String) -> Unit,
     dbHelper: DatabaseHelper
 ) {
-    // Pobranie listy unikalnych kategorii
+    val configuration = LocalConfiguration.current
+    val isLandscape = configuration.orientation == Configuration.ORIENTATION_LANDSCAPE
+
     val cocktails = remember { dbHelper.getCocktails() }
     val categories = remember { cocktails.map { it.category }.distinct().sorted() }
 
@@ -55,7 +59,7 @@ fun CategoriesScreen(
             )
 
             LazyVerticalGrid(
-                columns = GridCells.Fixed(2),
+                columns = GridCells.Fixed(if (isLandscape) 4 else 2),
                 contentPadding = PaddingValues(bottom = 16.dp),
                 horizontalArrangement = Arrangement.spacedBy(8.dp),
                 verticalArrangement = Arrangement.spacedBy(8.dp)
@@ -80,10 +84,13 @@ fun CategoriesScreen(
 
 @Composable
 fun CategoryCard(name: String, onClick: () -> Unit) {
+    val configuration = LocalConfiguration.current
+    val isLandscape = configuration.orientation == Configuration.ORIENTATION_LANDSCAPE
+
     Card(
         modifier = Modifier
             .fillMaxWidth()
-            .aspectRatio(1.5f)
+            .aspectRatio(if (isLandscape) 2f else 1.5f)
             .clickable(onClick = onClick),
         elevation = CardDefaults.cardElevation(defaultElevation = 4.dp),
         colors = CardDefaults.cardColors(containerColor = Color(0x33FFFFFF))
@@ -95,7 +102,7 @@ fun CategoryCard(name: String, onClick: () -> Unit) {
             Text(
                 text = name,
                 color = Color.White,
-                fontSize = 18.sp,
+                fontSize = if (isLandscape) 16.sp else 18.sp,
                 fontWeight = FontWeight.Bold,
                 textAlign = TextAlign.Center,
                 modifier = Modifier.padding(8.dp)

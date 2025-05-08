@@ -1,5 +1,6 @@
 package com.example.drinksapp.screens
 
+import android.content.res.Configuration
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.expandVertically
 import androidx.compose.animation.fadeIn
@@ -40,6 +41,7 @@ import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
@@ -60,6 +62,9 @@ fun CocktailListScreen(
     currentRoute: String,
     onNavigate: (String) -> Unit
 ) {
+    val configuration = LocalConfiguration.current
+    val isLandscape = configuration.orientation == Configuration.ORIENTATION_LANDSCAPE
+
     val category = currentRoute.substringAfter("?category=", "all")
     var searchQuery by remember { mutableStateOf("") }
     var isSearchVisible by remember { mutableStateOf(false) }
@@ -157,14 +162,14 @@ fun CocktailListScreen(
                 }
 
                 LazyVerticalGrid(
-                    columns = GridCells.Fixed(2),
+                    columns = GridCells.Fixed(if (isLandscape) 4 else 2),
                     contentPadding = PaddingValues(8.dp),
                     horizontalArrangement = Arrangement.spacedBy(8.dp),
                     verticalArrangement = Arrangement.spacedBy(8.dp),
                     modifier = Modifier.fillMaxSize()
                 ) {
                     items(filteredCocktails) { cocktail ->
-                        CocktailCard(cocktail, onCocktailClick)
+                        CocktailCard(cocktail, onCocktailClick, isLandscape)
                     }
                 }
             }
@@ -173,11 +178,11 @@ fun CocktailListScreen(
 }
 
 @Composable
-fun CocktailCard(cocktail: Cocktail, onClick: (Cocktail) -> Unit) {
+fun CocktailCard(cocktail: Cocktail, onClick: (Cocktail) -> Unit, isLandscape: Boolean) {
     Card(
         modifier = Modifier
             .fillMaxWidth()
-            .aspectRatio(0.75f)
+            .aspectRatio(if (isLandscape) 0.9f else 0.75f)
             .clickable { onClick(cocktail) },
         elevation = CardDefaults.cardElevation(defaultElevation = 4.dp),
         colors = CardDefaults.cardColors(containerColor = Color(0x33FFFFFF))
@@ -215,7 +220,7 @@ fun CocktailCard(cocktail: Cocktail, onClick: (Cocktail) -> Unit) {
                 Text(
                     text = cocktail.name,
                     color = Color.White,
-                    fontSize = 16.sp,
+                    fontSize = if (isLandscape) 14.sp else 16.sp,
                     fontWeight = FontWeight.Medium,
                     textAlign = TextAlign.Center,
                     maxLines = 1,
